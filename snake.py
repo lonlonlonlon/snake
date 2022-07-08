@@ -14,10 +14,10 @@ clock = pygame.time.Clock()
 
 FPS = 15  # How many times the screen will update per second
 
-screen_width = 1000  # How wide the window will be
-screen_height = 1000  # how high the window will be
-rows = 60  # x
-cols = 60  # y
+screen_width = 1400  # How wide the window will be
+screen_height = 1400  # how high the window will be
+rows = 70  # x
+cols = 70  # y
 
 screen = pygame.display.set_mode((screen_width, screen_height))  # creates the screen
 draw_array = []
@@ -39,18 +39,29 @@ score = 0
 snake_length = 6
 snake_direction = 'up'
 blue = (0, 0, 200)
+light_blue = (100, 100, 255)
+dark_blue = (0, 0, 80)
 cyan = (0, 200, 200)
 green = (0, 200, 0)
+light_green = (100, 255, 100)
+dark_green = (0, 80, 0)
 red = (200, 0, 0)
+light_red = (255, 100, 100)
+dark_red = (80, 0, 0)
 yellow = (200, 200, 0)
-purple = (200, 0, 200)
+purple = (80, 0, 80)
 orange = (200, 100, 0)
 black = (0, 0, 0)
 dark_grey = (80, 80, 80)
 grey = (110, 110, 110)
 light_grey = (160, 160, 160)
 white = (255, 255, 255)
-color_order = [blue, purple, red, orange, yellow, green, cyan]
+small_rainbow_color_order = [blue, purple, red, orange, yellow, green, cyan]
+large_rainbow_color_order = [light_blue, blue, dark_blue, purple, dark_red, red, light_red,
+                             orange, yellow, light_green, green, dark_green, cyan]
+color_order = small_rainbow_color_order
+color_order_string = "smoll-rainbow"
+color_order_dict = {"smoll-rainbow": small_rainbow_color_order, "grosse-rainbow": large_rainbow_color_order}
 color_state = 0
 color_assignment = {'r': dark_grey, 's': white, 'h': black, 'f': green}
 rect_size = screen_width/rows
@@ -67,46 +78,16 @@ small_text_size = math.floor(screen_width / 30)
 play_rect = pygame.Rect
 death_menue_rect = pygame.Rect
 options_rect = pygame.Rect
+exit_rect = pygame.Rect
+options_speed_up_rect = pygame.Rect
+options_speed_down_rect = pygame.Rect
+options_color_order_change_rect = pygame.Rect
+options_back_rect = pygame.Rect
 # r = Rand
 # h = Hintergrund
 # s = Schlangenkopf
 # b = snake Body
 # f = food
-
-
-def init_snake():
-    global draw_array
-    draw_array = []
-    for x in range(rows):
-        tmp = []
-        for y in range(cols):
-            tmp.append('h')
-        draw_array.append(tmp)
-    for x in range(rows):
-        for y in range(cols):
-            if x == 0 or x == rows-1 or y == 0 or y == cols-1 or y == 1 or y == cols-2:
-                draw_array[x][y] = 'r'
-
-    draw_array[int(rows / 2)][int(cols / 2)] = 's'  # set snake start position
-    global snake_head
-    snake_head = (int(rows / 2), int(cols / 2))
-    global snake_body
-    snake_body = []
-    global snake_body_color
-    snake_body_color = []
-    global score
-    score = 0
-    global snake_length
-    snake_length = 6
-    global snake_direction
-    snake_direction = 'up'
-    global color_state
-    color_state = 0
-    global already_turned_head
-    already_turned_head = False
-    global food_location
-    food_location = ()
-    spawn_food()
 
 
 def get_color(x, y):
@@ -168,8 +149,44 @@ def draw():
     pygame.display.flip()
 
 
+def reset_game():
+    global draw_array
+    draw_array = []
+    for x in range(rows):
+        tmp = []
+        for y in range(cols):
+            tmp.append('h')
+        draw_array.append(tmp)
+    for x in range(rows):
+        for y in range(cols):
+            if x == 0 or x == rows - 1 or y == 0 or y == cols - 1 or y == 1 or y == cols - 2:
+                draw_array[x][y] = 'r'
+
+    draw_array[int(rows / 2)][int(cols / 2)] = 's'  # set snake start position
+    global snake_head
+    snake_head = (int(rows / 2), int(cols / 2))
+    global snake_body
+    snake_body = []
+    global snake_body_color
+    snake_body_color = []
+    global score
+    score = 0
+    global snake_length
+    snake_length = 6
+    global snake_direction
+    snake_direction = 'up'
+    global color_state
+    color_state = 0
+    global already_turned_head
+    already_turned_head = False
+    global food_location
+    food_location = ()
+    spawn_food()
+
+
 def death_screen():
     global screen
+    global death_menue_rect
     while True:
         clock.tick(60)  # updates the screen, the amount of times it does so depends on the FPS
         pos = pygame.mouse.get_pos()
@@ -196,6 +213,7 @@ def death_screen():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     if death_menue_rect.collidepoint(pos):
+                        reset_game()
                         menue()
                     if death_exit_rect.collidepoint(pos):
                         pygame.quit()
@@ -302,23 +320,93 @@ def set_text(string, coordx, coordy, fontSize, color): #Function to set text
 
 
 def options_menue():
-    pass
+    global screen
+    global options_speed_up_rect
+    global options_speed_down_rect
+    global FPS
+    global options_color_order_change_rect
+    global color_order
+    global color_order_string
+    global color_order_dict
+    global options_back_rect
+    while True:
+        clock.tick(60)  # updates the screen, the amount of times it does so depends on the FPS
+        mouse_pos = pygame.mouse.get_pos()
+        screen.fill(black)
+        set_text("Optionen der Snake", width_draw_unit * 20, height_draw_unit * 4, title_text_size, cyan)
+        set_text("Schlang-schpeed: " + str(FPS), width_draw_unit * 17, height_draw_unit * 8, small_text_size,
+                green)
+        set_text("Schlang-farb: " + color_order_string, width_draw_unit * 17, height_draw_unit * 10, small_text_size,
+                 green)
+        options_back_rect = set_text("-> Bekk", width_draw_unit * 20, height_draw_unit * 35, small_text_size,
+                 green)
+        if options_back_rect.collidepoint(mouse_pos):
+            options_back_rect = set_text("-> Bekk", width_draw_unit * 20, height_draw_unit * 35, small_text_size,
+                                         red)
+        options_speed_up_rect = set_text(">", width_draw_unit * 34,
+                                         height_draw_unit * 8, medium_text_size, green)
+        if options_speed_up_rect.collidepoint(mouse_pos):
+            options_speed_up_rect = set_text(">", width_draw_unit * 34,
+                                             height_draw_unit * 8, medium_text_size, red)
+        options_speed_down_rect = set_text("<", width_draw_unit * 32,
+                                         height_draw_unit * 8, medium_text_size, green)
+        if options_speed_down_rect.collidepoint(mouse_pos):
+            options_speed_down_rect = set_text("<", width_draw_unit * 32,
+                                             height_draw_unit * 8, medium_text_size, red)
+        options_color_order_change_rect = set_text(">", width_draw_unit * 34,
+                                           height_draw_unit * 10, medium_text_size, green)
+        if options_color_order_change_rect.collidepoint(mouse_pos):
+            options_color_order_change_rect = set_text(">", width_draw_unit * 34,
+                                                       height_draw_unit * 10, medium_text_size, red)
+
+        pygame.display.flip()
+        for event in pygame.event.get():  # Allows you to add various events
+            if event.type == pygame.QUIT:  # Allows the user to exit using the X button
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if options_speed_up_rect.collidepoint(mouse_pos):
+                        if FPS != 100:
+                            FPS += 1
+                    if options_speed_down_rect.collidepoint(mouse_pos):
+                        if FPS != 3:
+                            FPS -= 1
+                    if options_color_order_change_rect.collidepoint(mouse_pos):
+                        temp = list(color_order_dict.items())
+                        index = [idx for idx, key in enumerate(temp) if key[0] == color_order_string][0]
+                        if index + 1 > len(color_order_dict) -1:
+                            index = 0
+                        else:
+                            index += 1
+                        keys = list(color_order_dict.keys())
+                        color_order_string = keys[index]
+                        color_order = color_order_dict[keys[index]]
+                    if options_back_rect.collidepoint(mouse_pos):
+                        menue()
+
 
 
 def process_menue_mouse_click():
+    global exit_rect
     pos = pygame.mouse.get_pos()
+    pos = (float(pos[0]), float(pos[1]))
     if play_rect.collidepoint(pos):
-        init_snake()
         game_loop()
         return
     if options_rect.collidepoint(pos):
         options_menue()
         return
+    if exit_rect.collidepoint(pos):
+        pygame.quit()
+        sys.exit()
 
 
 def draw_menue():
     global play_rect
     global options_rect
+    global exit_rect
     screen.fill((0, 0, 0))
     set_text("Die Snake geht WiLd!", width_draw_unit * 20, height_draw_unit * 4, title_text_size, cyan)
     play_rect = set_text("-> Schlange spielen", width_draw_unit * 20, height_draw_unit * 14, medium_text_size, green)
@@ -331,6 +419,11 @@ def draw_menue():
     if options_rect.collidepoint(mouse_pos):
         options_rect = set_text("-> Schlangenoptionen", width_draw_unit * 20,
                                 height_draw_unit * 17, medium_text_size, red)
+    exit_rect = set_text("-> brEXXIT oO", width_draw_unit * 20,
+                            height_draw_unit * 20, medium_text_size, green)
+    if exit_rect.collidepoint(mouse_pos):
+        exit_rect = set_text("-> brEXXIT oO", width_draw_unit * 20,
+                                height_draw_unit * 20, medium_text_size, red)
     pygame.display.flip()
 
 
@@ -348,6 +441,7 @@ def menue():
                 if event.button == 1:
                     process_menue_mouse_click()
 
+reset_game()
 menue()
 
 #------------------------#
