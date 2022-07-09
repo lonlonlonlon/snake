@@ -14,10 +14,10 @@ clock = pygame.time.Clock()
 
 FPS = 15  # How many times the screen will update per second
 
-screen_width = 1400  # How wide the window will be
-screen_height = 1400  # how high the window will be
-rows = 70  # x
-cols = 70  # y
+screen_width = 1000  # How wide the window will be
+screen_height = 1000  # how high the window will be
+rows = 60  # x
+cols = 60  # y
 
 screen = pygame.display.set_mode((screen_width, screen_height))  # creates the screen
 draw_array = []
@@ -83,12 +83,24 @@ options_speed_up_rect = pygame.Rect
 options_speed_down_rect = pygame.Rect
 options_color_order_change_rect = pygame.Rect
 options_back_rect = pygame.Rect
+hit_sound = pygame.mixer.Sound(os.getcwd() + "/hit.wav")
+select_1_sound = pygame.mixer.Sound(os.getcwd() + "/blipSelect.wav")
+select_2_sound = pygame.mixer.Sound(os.getcwd() + "/blipSelect2.wav")
+blip_sounds = [select_2_sound, select_1_sound]
+power_up_sound = pygame.mixer.Sound(os.getcwd() + "/powerUp.wav")
+pygame.mixer.music.load(os.getcwd() + "/MagicHappensSong.flac")
+snake_turn_sound = pygame.mixer.Sound(os.getcwd() + "/snake_turn.wav")
+pygame.mixer.music.play(-1)
 # r = Rand
 # h = Hintergrund
 # s = Schlangenkopf
 # b = snake Body
 # f = food
 
+
+def play_blip_sound():
+    rnd = random.randint(0, len(blip_sounds) -1)
+    pygame.mixer.Sound.play(blip_sounds[rnd])
 
 def get_color(x, y):
     color = draw_array[x][y]
@@ -216,11 +228,13 @@ def death_screen():
                         reset_game()
                         menue()
                     if death_exit_rect.collidepoint(pos):
+                        play_blip_sound()
                         pygame.quit()
                         sys.exit()
 
 
 def die():
+    pygame.mixer.Sound.play(hit_sound)
     death_screen()
 
 def next_color():
@@ -280,6 +294,7 @@ def change_snake_direction(direction):
         return
     if orientation_no_go_dict[snake_direction] == direction:
         return
+    # pygame.mixer.Sound.play(snake_turn_sound)
     snake_direction = direction
     already_turned_head = True
 
@@ -369,11 +384,18 @@ def options_menue():
                     mouse_pos = pygame.mouse.get_pos()
                     if options_speed_up_rect.collidepoint(mouse_pos):
                         if FPS != 100:
+                            play_blip_sound()
                             FPS += 1
+                        else:
+                            pygame.mixer.Sound.play(hit_sound)
                     if options_speed_down_rect.collidepoint(mouse_pos):
                         if FPS != 3:
+                            play_blip_sound()
                             FPS -= 1
+                        else:
+                            pygame.mixer.Sound.play(hit_sound)
                     if options_color_order_change_rect.collidepoint(mouse_pos):
+                        play_blip_sound()
                         temp = list(color_order_dict.items())
                         index = [idx for idx, key in enumerate(temp) if key[0] == color_order_string][0]
                         if index + 1 > len(color_order_dict) -1:
@@ -384,6 +406,7 @@ def options_menue():
                         color_order_string = keys[index]
                         color_order = color_order_dict[keys[index]]
                     if options_back_rect.collidepoint(mouse_pos):
+                        play_blip_sound()
                         menue()
 
 
