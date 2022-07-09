@@ -90,7 +90,7 @@ blip_sounds = [select_2_sound, select_1_sound]
 power_up_sound = pygame.mixer.Sound(os.getcwd() + "/powerUp.wav")
 pygame.mixer.music.load(os.getcwd() + "/MagicHappensSong.flac")
 snake_turn_sound = pygame.mixer.Sound(os.getcwd() + "/snake_turn.wav")
-pygame.mixer.music.play(-1)
+# pygame.mixer.music.play(-1)
 # r = Rand
 # h = Hintergrund
 # s = Schlangenkopf
@@ -260,6 +260,7 @@ def try_move_snake(x, y):
         die()
     if draw_array[x][y] == 'f':
         snake_length += 1
+        pygame.mixer.Sound.play(power_up_sound)
         score += 1
         spawn_food()
     snake_body.append(snake_head)
@@ -416,9 +417,11 @@ def process_menue_mouse_click():
     pos = pygame.mouse.get_pos()
     pos = (float(pos[0]), float(pos[1]))
     if play_rect.collidepoint(pos):
+        play_blip_sound()
         game_loop()
         return
     if options_rect.collidepoint(pos):
+        play_blip_sound()
         options_menue()
         return
     if exit_rect.collidepoint(pos):
