@@ -94,6 +94,7 @@ blip_sounds = [select_2_sound, select_1_sound]
 power_up_sound = pygame.mixer.Sound(os.getcwd() + "/powerUp.wav")
 pygame.mixer.music.load(os.getcwd() + "/MagicHappensSong.flac")
 snake_turn_sound = pygame.mixer.Sound(os.getcwd() + "/snake_turn.wav")
+sound_enabled = True
 # pygame.mixer.music.play(-1)
 # r = Rand
 # h = Hintergrund
@@ -256,8 +257,13 @@ def death_screen():
                         sys.exit()
 
 
+def play_hit_sound():
+    if sound_enabled:
+        pygame.mixer.Sound.play(hit_sound)
+
+
 def die():
-    pygame.mixer.Sound.play(hit_sound)
+    play_hit_sound()
     death_screen()
 
 def next_color():
@@ -269,6 +275,15 @@ def next_color():
     color_state += 1
     return ret
 
+
+def play_small_food_sound():
+    if sound_enabled:
+        pygame.mixer.Sound.play(small_food_sound)
+
+
+def play_power_up_sound():
+    if sound_enabled:
+        pygame.mixer.Sound.play(power_up_sound)
 
 
 def try_move_snake(x, y):
@@ -283,12 +298,12 @@ def try_move_snake(x, y):
         die()
     if draw_array[x][y] == 'f':
         snake_length += 1
-        pygame.mixer.Sound.play(small_food_sound)
+        play_small_food_sound()
         score += 1
         spawn_food()
     if draw_array[x][y] == '5':
         snake_length += 5
-        pygame.mixer.Sound.play(power_up_sound)
+        play_power_up_sound()
         score += 3
         spawn_food()
     snake_body.append(snake_head)
@@ -424,13 +439,13 @@ def options_menue():
                             play_blip_sound()
                             FPS += 1
                         else:
-                            pygame.mixer.Sound.play(hit_sound)
+                            play_hit_sound()
                     if options_speed_down_rect.collidepoint(mouse_pos):
                         if FPS != 3:
                             play_blip_sound()
                             FPS -= 1
                         else:
-                            pygame.mixer.Sound.play(hit_sound)
+                            play_hit_sound()
                     if options_color_order_change_rect.collidepoint(mouse_pos):
                         play_blip_sound()
                         temp = list(color_order_dict.items())
