@@ -63,12 +63,15 @@ color_order = small_rainbow_color_order
 color_order_string = "smoll-rainbow"
 color_order_dict = {"smoll-rainbow": small_rainbow_color_order, "grosse-rainbow": large_rainbow_color_order}
 color_state = 0
-color_assignment = {'r': dark_grey, 's': white, 'h': black, 'f': green}
+color_assignment = {'r': dark_grey, 's': white, 'h': black, 'f': green, '5': light_green, 'l': light_blue}
 rect_size = screen_width/rows
 orientation_no_go_dict = {'up':'down','down':'up','left':'right','right':'left'}
 already_turned_head = False
 food_location = ()
+food_type = ''
+food_ttl = 0
 food_color_rotation = [dark_grey, grey, light_grey, grey]
+food_5_color_rotation = [yellow, white, yellow, light_green]
 rect_size_ciel = math.ceil(rect_size)
 width_draw_unit = screen_width / 40
 height_draw_unit = screen_height / 40
@@ -86,6 +89,7 @@ options_back_rect = pygame.Rect
 hit_sound = pygame.mixer.Sound(os.getcwd() + "/hit.wav")
 select_1_sound = pygame.mixer.Sound(os.getcwd() + "/blipSelect.wav")
 select_2_sound = pygame.mixer.Sound(os.getcwd() + "/blipSelect2.wav")
+small_food_sound = pygame.mixer.Sound(os.getcwd() + "/small_food.wav")
 blip_sounds = [select_2_sound, select_1_sound]
 power_up_sound = pygame.mixer.Sound(os.getcwd() + "/powerUp.wav")
 pygame.mixer.music.load(os.getcwd() + "/MagicHappensSong.flac")
@@ -96,6 +100,9 @@ snake_turn_sound = pygame.mixer.Sound(os.getcwd() + "/snake_turn.wav")
 # s = Schlangenkopf
 # b = snake Body
 # f = food
+# 5 = special food (5% chance of spawning instead of norm. food, gives 5 length and 3 pts) || has ttl of 350 Frames
+# // planned ----------
+# l = Lurchgeschwindigkeit!!!!! // powerup zeitbegrenzt erhöhte geschwindigkeit und mehr punkte!
 
 
 def play_blip_sound():
@@ -116,13 +123,23 @@ def get_color(x, y):
 #     else:
 #         return color_assignment[color]
 
+
 def spawn_food():
     global draw_array
     global food_location
+    global food_type
+    global food_ttl
     rnd = random.randint(1, rows-2), random.randint(1, cols-2)
     while draw_array[rnd[0]][rnd[1]] != 'h':
         rnd = random.randint(1, rows-2), random.randint(1, cols-2)
-    draw_array[rnd[0]][rnd[1]] = 'f'
+    if random.randint(0, 9) == 1:
+        draw_array[rnd[0]][rnd[1]] = '5'
+        food_type = '5'
+        food_ttl = 100
+    else:
+        draw_array[rnd[0]][rnd[1]] = 'f'
+        food_type = 'f'
+        food_ttl = -1
     food_location = rnd
 
 
@@ -141,9 +158,15 @@ def redraw_food():
     global food_location
     global rect_size
     global screen
-    col = food_color_rotation.pop(0)
-    pygame.draw.rect(screen, col, pygame.Rect(math.floor(food_location[0] * rect_size), math.floor(food_location[1] * rect_size), rect_size_ciel, rect_size_ciel))
-    food_color_rotation.append(col)
+    global food_5_color_rotation
+    if food_type == 'f':
+        col = food_color_rotation.pop(0)
+        pygame.draw.rect(screen, col, pygame.Rect(math.floor(food_location[0] * rect_size), math.floor(food_location[1] * rect_size), rect_size_ciel, rect_size_ciel))
+        food_color_rotation.append(col)
+    if food_type == '5':
+        col = food_5_color_rotation.pop(0)
+        pygame.draw.rect(screen, col, pygame.Rect(math.floor(food_location[0] * rect_size), math.floor(food_location[1] * rect_size), rect_size_ciel, rect_size_ciel))
+        food_5_color_rotation.append(col)
 
 
 def draw_text_overlay():
@@ -225,10 +248,10 @@ def death_screen():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     if death_menue_rect.collidepoint(pos):
+                        play_blip_sound()
                         reset_game()
                         menue()
                     if death_exit_rect.collidepoint(pos):
-                        play_blip_sound()
                         pygame.quit()
                         sys.exit()
 
@@ -260,8 +283,13 @@ def try_move_snake(x, y):
         die()
     if draw_array[x][y] == 'f':
         snake_length += 1
-        pygame.mixer.Sound.play(power_up_sound)
+        pygame.mixer.Sound.play(small_food_sound)
         score += 1
+        spawn_food()
+    if draw_array[x][y] == '5':
+        snake_length += 5
+        pygame.mixer.Sound.play(power_up_sound)
+        score += 3
         spawn_food()
     snake_body.append(snake_head)
     snake_body_color.append(next_color())
@@ -300,6 +328,13 @@ def change_snake_direction(direction):
     already_turned_head = True
 
 
+def item_logic_cycle():
+    global food_ttl
+    food_ttl -= 1
+    if food_ttl == 0:
+        draw_array[food_location[0]][food_location[1]] = 'h'
+        spawn_food()
+
 
 def game_loop():
     global FPS
@@ -307,6 +342,7 @@ def game_loop():
     while True:
         clock.tick(FPS)  # updates the screen, the amount of times it does so depends on the FPS
         do_movement()
+        item_logic_cycle()
         draw()
         already_turned_head = False
         for event in pygame.event.get():  # Allows you to add various events
