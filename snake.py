@@ -105,6 +105,8 @@ sound_enabled = True
 # // planned ----------
 # l = Lurchgeschwindigkeit!!!!! // powerup zeitbegrenzt erhöhte geschwindigkeit und mehr punkte!
 
+# PIPELINE FÜR KEY INPUTS; JEDEN FRAME EINS NEHMEN UND ENTFERNEN (max 3)
+# bei score 100 dicken Apfel aus mehreren essen spawnen und hoher speed mit unverwundbarkeit (alles zeitbegrenzt)
 
 def play_blip_sound():
     rnd = random.randint(0, len(blip_sounds) -1)
