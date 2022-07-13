@@ -92,7 +92,7 @@ select_2_sound = pygame.mixer.Sound(os.getcwd() + "/blipSelect2.wav")
 small_food_sound = pygame.mixer.Sound(os.getcwd() + "/small_food.wav")
 blip_sounds = [select_2_sound, select_1_sound]
 power_up_sound = pygame.mixer.Sound(os.getcwd() + "/powerUp.wav")
-pygame.mixer.music.load(os.getcwd() + "/MagicHappensSong.flac")
+# pygame.mixer.music.load(os.getcwd() + "/MagicHappensSong.flac") // windows hat trouble mit flac
 snake_turn_sound = pygame.mixer.Sound(os.getcwd() + "/snake_turn.wav")
 sound_enabled = True
 # pygame.mixer.music.play(-1)
@@ -176,6 +176,24 @@ def draw_text_overlay():
     set_text("score: " + str(score), math.floor(rows/2 * rect_size), rect_size, small_text_size, white)
 
 
+def draw_border_markings():
+    global snake_head
+    x = snake_head[0]
+    y = snake_head[1]
+    if x == food_location[0]:
+        pygame.draw.rect(screen, dark_green, pygame.Rect(math.floor(x * rect_size), math.floor(2 * rect_size), rect_size_ciel, rect_size_ciel))
+        pygame.draw.rect(screen, dark_green, pygame.Rect(math.floor(x * rect_size), math.floor((cols - 2) * rect_size), rect_size_ciel, rect_size_ciel))
+    else:
+        pygame.draw.rect(screen, dark_red, pygame.Rect(math.floor(x * rect_size), math.floor(2 * rect_size), rect_size_ciel, rect_size_ciel))
+        pygame.draw.rect(screen, dark_red, pygame.Rect(math.floor(x * rect_size), math.floor((cols - 2) * rect_size), rect_size_ciel, rect_size_ciel))
+    if y == food_location[1]:
+        pygame.draw.rect(screen, dark_green, pygame.Rect(math.floor(0 * rect_size), math.floor(y * rect_size), rect_size_ciel, rect_size_ciel))
+        pygame.draw.rect(screen, dark_green, pygame.Rect(math.floor((rows - 1) * rect_size), math.floor(y * rect_size), rect_size_ciel, rect_size_ciel))
+    else:
+        pygame.draw.rect(screen, dark_red, pygame.Rect(math.floor(0 * rect_size), math.floor(y * rect_size), rect_size_ciel, rect_size_ciel))
+        pygame.draw.rect(screen, dark_red, pygame.Rect(math.floor((rows - 1) * rect_size), math.floor(y * rect_size), rect_size_ciel, rect_size_ciel))
+
+
 def draw():
     for x_d in range(rows):
         for y_d in range(cols):
@@ -183,6 +201,7 @@ def draw():
             pygame.draw.rect(screen, color, pygame.Rect(math.floor(x_d * rect_size), math.floor(y_d * rect_size), rect_size_ciel, rect_size_ciel))
     redraw_snake()
     redraw_food()
+    draw_border_markings()
     draw_text_overlay()
     pygame.display.flip()
 
@@ -197,7 +216,7 @@ def reset_game():
         draw_array.append(tmp)
     for x in range(rows):
         for y in range(cols):
-            if x == 0 or x == rows - 1 or y == 0 or y == cols - 1 or y == 1 or y == cols - 2:
+            if x == 0 or x == rows - 1 or y == 0 or y == cols - 1 or y == 1 or y == cols - 2 or y == 2:
                 draw_array[x][y] = 'r'
 
     draw_array[int(rows / 2)][int(cols / 2)] = 's'  # set snake start position
