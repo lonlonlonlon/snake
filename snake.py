@@ -183,15 +183,9 @@ def draw_border_markings():
     if x == food_location[0]:
         pygame.draw.rect(screen, dark_green, pygame.Rect(math.floor(x * rect_size), math.floor(2 * rect_size), rect_size_ciel, rect_size_ciel))
         pygame.draw.rect(screen, dark_green, pygame.Rect(math.floor(x * rect_size), math.floor((cols - 2) * rect_size), rect_size_ciel, rect_size_ciel))
-    else:
-        pygame.draw.rect(screen, dark_red, pygame.Rect(math.floor(x * rect_size), math.floor(2 * rect_size), rect_size_ciel, rect_size_ciel))
-        pygame.draw.rect(screen, dark_red, pygame.Rect(math.floor(x * rect_size), math.floor((cols - 2) * rect_size), rect_size_ciel, rect_size_ciel))
     if y == food_location[1]:
         pygame.draw.rect(screen, dark_green, pygame.Rect(math.floor(0 * rect_size), math.floor(y * rect_size), rect_size_ciel, rect_size_ciel))
         pygame.draw.rect(screen, dark_green, pygame.Rect(math.floor((rows - 1) * rect_size), math.floor(y * rect_size), rect_size_ciel, rect_size_ciel))
-    else:
-        pygame.draw.rect(screen, dark_red, pygame.Rect(math.floor(0 * rect_size), math.floor(y * rect_size), rect_size_ciel, rect_size_ciel))
-        pygame.draw.rect(screen, dark_red, pygame.Rect(math.floor((rows - 1) * rect_size), math.floor(y * rect_size), rect_size_ciel, rect_size_ciel))
 
 
 def draw():
@@ -372,6 +366,27 @@ def item_logic_cycle():
         spawn_food()
 
 
+def draw_pause_overlay():
+    global screen
+    screen.fill(black)
+    set_text("ESC to resume", screen_width/2, screen_height/2, title_text_size, green)
+    pygame.display.flip()
+
+
+def pause_menue():
+    global FPS
+    while True:
+        clock.tick(FPS)  # updates the screen, the amount of times it does so depends on the FPS
+        draw_pause_overlay()
+        for event in pygame.event.get():  # Allows you to add various events
+            if event.type == pygame.QUIT:  # Allows the user to exit using the X button
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+
+
 def game_loop():
     global FPS
     global already_turned_head
@@ -394,6 +409,8 @@ def game_loop():
                     change_snake_direction('left')
                 if event.key == pygame.K_d:
                     change_snake_direction('right')
+                if event.key == pygame.K_ESCAPE:
+                    pause_menue()
 
 
 def set_text(string, coordx, coordy, fontSize, color): #Function to set text
